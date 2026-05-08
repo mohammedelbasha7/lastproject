@@ -86,14 +86,29 @@ app = FastAPI(
 )
 
 
+def get_allowed_cors_origins() -> list[str]:
+    configured = os.environ.get("ALLOWED_ORIGINS", "")
+    origins = [origin.strip().rstrip("/") for origin in configured.split(",") if origin.strip()]
+    if not origins:
+        origins = [
+            settings.frontend_url.rstrip("/"),
+            settings.backend_url.rstrip("/"),
+            "http://127.0.0.1:3000",
+            "http://localhost:3000",
+            "http://127.0.0.1:5173",
+            "http://localhost:5173",
+        ]
+    return sorted(set(origins))
+
+
 # MODULE_MIDDLEWARE_START
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r".*",
+    allow_origins=get_allowed_cors_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With", "X-Request-ID"],
+    expose_headers=["X-Request-ID"],
 )
 # MODULE_MIDDLEWARE_END
 
@@ -193,6 +208,13 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.get("/api/config")
+def runtime_config(request: Request):
+    configured_backend_url = os.environ.get("PYTHON_BACKEND_URL", "").strip()
+    api_base_url = configured_backend_url or str(request.base_url).rstrip("/")
+    return {"API_BASE_URL": api_base_url}
 
 
 def run_in_debug_mode(app: FastAPI):

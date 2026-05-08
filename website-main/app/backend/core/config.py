@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     # Server
     host: str = "0.0.0.0"
     port: int = 8000
+    database_url: str = ""
 
     # Authentication
     frontend_url: str = "http://127.0.0.1:3000"
@@ -34,13 +35,13 @@ class Settings(BaseSettings):
     oidc_client_secret: str = ""
     oidc_scope: str = "openid email profile"
 
-    # Order notification email
-    order_notification_email: str = "mhmdaaa610@gmail.com"
-    smtp_host: str = "smtp.gmail.com"
+    # Notification email. Configure these via environment variables, never source.
+    order_notification_email: str = ""
+    smtp_host: str = ""
     smtp_port: int = 587
-    smtp_user: str = "mhmdaaa610@gmail.com"
-    smtp_password: str = "aqrtoxqnochyutze"
-    smtp_from: str = "mhmdaaa610@gmail.com"
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
 
     # AWS Lambda Configuration
     is_lambda: bool = False

@@ -1,14 +1,17 @@
 import json
 import logging
+import smtplib
+from email.message import EmailMessage
 from typing import List, Optional
 
 
 from dependencies.auth import get_admin_user
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
 from schemas.auth import UserResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import settings
 from core.database import get_db
 from services.contact_submissions import Contact_submissionsService
 
@@ -24,9 +27,9 @@ class Contact_submissionsData(BaseModel):
     name: str
     mobile: str
     email: str
-    message: str = None
-    read: bool = None
-    created_at: str = None
+    message: Optional[str] = None
+    read: Optional[bool] = None
+    created_at: Optional[str] = None
 
 
 class Contact_submissionsUpdateData(BaseModel):
@@ -184,9 +187,53 @@ async def get_contact_submissions(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+def _get_contact_notification_recipient() -> str:
+    return (
+        str(getattr(settings, "order_notification_email", "")).strip()
+        or str(getattr(settings, "admin_user_email", "")).strip()
+        or "albashadesign@gmail.com"
+    )
+
+
+def _send_contact_notification_email_sync(*, recipient: str, subject: str, body: str, reply_to: Optional[str] = None):
+    smtp_host = str(getattr(settings, "smtp_host", "")).strip()
+    smtp_port = int(getattr(settings, "smtp_port", 587) or 587)
+    smtp_user = str(getattr(settings, "smtp_user", "")).strip()
+    smtp_password = str(getattr(settings, "smtp_password", "")).strip()
+    smtp_from = str(getattr(settings, "smtp_from", "")).strip() or smtp_user
+
+    if not smtp_host or not smtp_user or not smtp_password or not smtp_from or not recipient:
+        logger.warning(
+            "Contact email notification skipped because SMTP_HOST, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, or recipient is missing"
+        )
+        return
+
+    message = EmailMessage()
+    message["From"] = smtp_from
+    message["To"] = recipient
+    message["Subject"] = subject
+    if reply_to:
+        message["Reply-To"] = reply_to
+    message.set_content(body)
+
+    with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as smtp:
+        smtp.starttls()
+        smtp.login(smtp_user, smtp_password)
+        smtp.send_message(message)
+
+
+def _send_contact_notification_email_safe(*, recipient: str, subject: str, body: str, reply_to: Optional[str] = None):
+    try:
+        _send_contact_notification_email_sync(recipient=recipient, subject=subject, body=body, reply_to=reply_to)
+        logger.info("Contact submission notification email sent to %s", recipient)
+    except Exception as exc:
+        logger.error("Failed to send contact submission notification email: %s", exc, exc_info=True)
+
+
 @router.post("", response_model=Contact_submissionsResponse, status_code=201)
 async def create_contact_submissions(
     data: Contact_submissionsData,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new contact_submissions"""
@@ -199,6 +246,25 @@ async def create_contact_submissions(
             raise HTTPException(status_code=400, detail="Failed to create contact_submissions")
         
         logger.info(f"Contact_submissions created successfully with id: {result.id}")
+
+        recipient = _get_contact_notification_recipient()
+        subject = f"New contact submission from {result.name}"
+        body = (
+            f"Name: {result.name}\n"
+            f"Mobile: {result.mobile}\n"
+            f"Email: {result.email}\n"
+            f"Message:\n{result.message or '(no message)'}\n\n"
+            f"Read: {result.read}\n"
+            f"Created at: {result.created_at or 'unknown'}\n"
+        )
+        background_tasks.add_task(
+            _send_contact_notification_email_safe,
+            recipient=recipient,
+            subject=subject,
+            body=body,
+            reply_to=result.email,
+        )
+
         return result
     except ValueError as e:
         logger.error(f"Validation error creating contact_submissions: {str(e)}")
