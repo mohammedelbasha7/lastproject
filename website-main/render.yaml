@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: lastproject-backend
+    runtime: python
+    rootDir: website-main/app/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./local_dev.db
+      - key: FRONTEND_URL
+        value: https://mohammedelbasha7.github.io/lastproject
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: ORDER_NOTIFICATION_EMAIL
+        sync: false
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: OIDC_CLIENT_ID
+        sync: false
+      - key: OIDC_CLIENT_SECRET
+        sync: false
