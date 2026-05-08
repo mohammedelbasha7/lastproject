@@ -1,0 +1,53 @@
+{
+    "title": "products",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "name": {
+            "type": "string",
+            "description": "Product name in Hebrew"
+        },
+        "slug": {
+            "type": "string",
+            "description": "URL-friendly slug"
+        },
+        "description": {
+            "type": "string",
+            "description": "Product description"
+        },
+        "price": {
+            "type": "integer",
+            "description": "Price in ILS"
+        },
+        "image_url": {
+            "type": "string",
+            "description": "Product image URL"
+        },
+        "stock_quantity": {
+            "type": "integer",
+            "description": "Available stock quantity"
+        },
+        "category_id": {
+            "type": "integer",
+            "description": "Foreign key to categories"
+        },
+        "featured": {
+            "type": "boolean",
+            "description": "Whether product is featured"
+        },
+        "created_at": {
+            "type": "string",
+            "description": "Creation timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "slug",
+        "price",
+        "category_id"
+    ]
+}

@@ -1,0 +1,62 @@
+[
+    {
+        "name": "מיטת אלגנט זוגית",
+        "slug": "elegant-double",
+        "description": "מיטה זוגית עם ראש מיטה מרופד, עיצוב אירופאי, כוללת ארגז מצעים",
+        "price": 4990,
+        "image_url": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&q=80",
+        "category_id": 1,
+        "featured": true,
+        "created_at": "2026-04-18 00:00:00"
+    },
+    {
+        "name": "מיטת רויאל זוגית",
+        "slug": "royal-double",
+        "description": "מיטה זוגית יוקרתית עם ראש מיטה גבוה, ריפוד קטיפה",
+        "price": 6490,
+        "image_url": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80",
+        "category_id": 1,
+        "featured": true,
+        "created_at": "2026-04-17 00:00:00"
+    },
+    {
+        "name": "מיטת ילדים קלאסית",
+        "slug": "kids-classic",
+        "description": "מיטת ילדים נוחה ובטוחה, עם מגירות לאחסון",
+        "price": 2890,
+        "image_url": "https://images.unsplash.com/photo-1558882224-dda166733046?w=800&q=80",
+        "category_id": 3,
+        "featured": true,
+        "created_at": "2026-04-16 00:00:00"
+    },
+    {
+        "name": "מזרן אורטופדי פרימיום",
+        "slug": "ortho-premium",
+        "description": "מזרן אורטופדי עם קפיצים מבודדים, תמיכה מלאה לעמוד השדרה",
+        "price": 3490,
+        "image_url": "https://images.unsplash.com/photo-1631049552057-403cdb8f0658?w=800&q=80",
+        "category_id": 4,
+        "featured": true,
+        "created_at": "2026-04-15 00:00:00"
+    },
+    {
+        "name": "מזרן ויסקו דלוקס",
+        "slug": "visco-deluxe",
+        "description": "מזרן ויסקו איכותי עם שכבת זיכרון, נוחות מקסימלית",
+        "price": 4290,
+        "image_url": "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800&q=80",
+        "category_id": 4,
+        "featured": true,
+        "created_at": "2026-04-14 00:00:00"
+    },
+    {
+        "name": "מזרן לטקס טבעי",
+        "slug": "latex-natural",
+        "description": "מזרן לטקס טבעי, אנטי-אלרגי, נושם ואיכותי",
+        "price": 5190,
+        "image_url": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80",
+        "category_id": 4,
+        "featured": true,
+        "created_at": "2026-04-13 00:00:00"
+    }
+]

@@ -1,0 +1,9 @@
+venv/
+.venv/
+*.log
+*.db
+node_modules/
+build/
+__pycache__
+dist
+vite.config.ts.timestamp-*

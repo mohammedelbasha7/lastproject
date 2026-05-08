@@ -1,0 +1,32 @@
+{
+    "title": "testimonials",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "customer_name": {
+            "type": "string",
+            "description": "Customer name"
+        },
+        "content": {
+            "type": "string",
+            "description": "Testimonial text"
+        },
+        "rating": {
+            "type": "integer",
+            "description": "Rating 1-5"
+        },
+        "created_at": {
+            "type": "string",
+            "description": "Creation timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "customer_name",
+        "content",
+        "rating"
+    ]
+}
