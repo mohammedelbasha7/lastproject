@@ -51,16 +51,8 @@ class RPApi {
   }
 
   async logout() {
-    try {
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
-      const response = await this.client.get(
-        `${this.getBaseURL()}/api/v1/auth/logout`
-      );
-      // The backend will redirect to OIDC provider logout
-      window.location.href = response.data.redirect_url;
-    } catch (error) {
-      throw new Error(error.response?.data?.detail || 'Failed to logout');
-    }
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(AUTH_RETURN_TO_KEY);
   }
 }
 
