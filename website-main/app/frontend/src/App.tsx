@@ -15,6 +15,7 @@ import CategoryPage from './pages/CategoryPage';
 import SearchPage from './pages/SearchPage';
 
 const queryClient = new QueryClient();
+const routerBasename = import.meta.env.BASE_URL;
 
 const AppRoutes = () => (
   <Routes>
@@ -42,7 +43,7 @@ const App = () => (
       <CartProvider>
         <TooltipProvider>
           <Toaster />
-          <BrowserRouter>
+          <BrowserRouter basename={routerBasename}>
             <AppRoutes />
           </BrowserRouter>
         </TooltipProvider>
