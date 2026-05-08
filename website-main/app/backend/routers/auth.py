@@ -98,6 +98,17 @@ def get_frontend_url(request: Request) -> str:
     return "http://127.0.0.1:3000"
 
 
+def build_frontend_route_url(request: Request, path: str, query: str) -> str:
+    frontend_url = get_frontend_url(request)
+    clean_path = path.lstrip("/")
+    separator = "&" if "?" in clean_path else "?"
+
+    if "github.io" in frontend_url:
+        return f"{frontend_url}/#/{clean_path}{separator}{query}"
+
+    return f"{frontend_url}/{clean_path}{separator}{query}"
+
+
 @router.get("/login")
 async def login(request: Request, db: AsyncSession = Depends(get_db)):
     """Start OIDC login flow with PKCE."""
@@ -152,7 +163,7 @@ async def dev_admin_login(request: Request, db: AsyncSession = Depends(get_db)):
             }
         )
         return RedirectResponse(
-            url=f"{get_frontend_url(request)}/auth/callback?{fragment}",
+            url=build_frontend_route_url(request, "auth/callback", fragment),
             status_code=status.HTTP_302_FOUND,
         )
 
@@ -176,7 +187,7 @@ async def callback(
     def redirect_with_error(message: str) -> RedirectResponse:
         fragment = urlencode({"msg": message})
         return RedirectResponse(
-            url=f"{get_frontend_url(request)}/auth/error?{fragment}",
+            url=build_frontend_route_url(request, "auth/error", fragment),
             status_code=status.HTTP_302_FOUND,
         )
 
@@ -268,7 +279,7 @@ async def callback(
             }
         )
 
-        redirect_url = f"{get_frontend_url(request)}/auth/callback?{fragment}"
+        redirect_url = build_frontend_route_url(request, "auth/callback", fragment)
         logger.info("[callback] OIDC callback successful, redirecting to %s", redirect_url)
         redirect_response = RedirectResponse(
             url=redirect_url,
