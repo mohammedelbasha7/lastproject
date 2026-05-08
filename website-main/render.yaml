@@ -8,6 +8,8 @@ services:
     envVars:
       - key: DATABASE_URL
         value: sqlite:///./local_dev.db
+      - key: PYTHON_VERSION
+        value: 3.12.8
       - key: FRONTEND_URL
         value: https://mohammedelbasha7.github.io/lastproject
       - key: SMTP_HOST
