@@ -9,9 +9,11 @@ let configLoading = true;
 // Default fallback configuration
 const defaultConfig = {
   API_BASE_URL:
-    typeof window !== 'undefined'
-      ? window.location.origin
-      : 'http://127.0.0.1:8000', // Only used if runtime config fails to load
+    typeof window !== 'undefined' && window.location.hostname === 'mohammedelbasha7.github.io'
+      ? 'https://lastproject-rwx2.onrender.com'
+      : typeof window !== 'undefined'
+        ? window.location.origin
+        : 'http://127.0.0.1:8000', // Only used if runtime config fails to load
 };
 
 function isLocalAPIBaseURL(url: string): boolean {

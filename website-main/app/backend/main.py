@@ -5,6 +5,7 @@ import pkgutil
 import traceback
 from contextlib import asynccontextmanager
 from datetime import datetime
+from urllib.parse import urlparse
 
 from core.config import settings
 from fastapi import FastAPI, HTTPException, Request, status
@@ -86,13 +87,21 @@ app = FastAPI(
 )
 
 
+def get_url_origin(url: str) -> str:
+    parsed = urlparse(url)
+    if not parsed.scheme or not parsed.netloc:
+        return url.rstrip("/")
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
 def get_allowed_cors_origins() -> list[str]:
     configured = os.environ.get("ALLOWED_ORIGINS", "")
-    origins = [origin.strip().rstrip("/") for origin in configured.split(",") if origin.strip()]
+    origins = [get_url_origin(origin.strip()) for origin in configured.split(",") if origin.strip()]
     if not origins:
         origins = [
-            settings.frontend_url.rstrip("/"),
-            settings.backend_url.rstrip("/"),
+            get_url_origin(settings.frontend_url),
+            get_url_origin(settings.backend_url),
+            "https://mohammedelbasha7.github.io",
             "http://127.0.0.1:3000",
             "http://localhost:3000",
             "http://127.0.0.1:5173",
