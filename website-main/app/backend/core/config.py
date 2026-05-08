@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Any, Optional
 
 from pydantic_settings import BaseSettings
@@ -33,6 +34,14 @@ class Settings(BaseSettings):
     oidc_client_secret: str = ""
     oidc_scope: str = "openid email profile"
 
+    # Order notification email
+    order_notification_email: str = "mhmdaaa610@gmail.com"
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = "mhmdaaa610@gmail.com"
+    smtp_password: str = "aqrtoxqnochyutze"
+    smtp_from: str = "mhmdaaa610@gmail.com"
+
     # AWS Lambda Configuration
     is_lambda: bool = False
     lambda_function_name: str = "fastapi-backend"
@@ -54,6 +63,8 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = False
         extra = "ignore"
+        env_file = str(Path(__file__).resolve().parents[1] / ".env")
+        env_file_encoding = "utf-8"
 
     def __getattr__(self, name: str) -> Any:
         """
