@@ -8,8 +8,25 @@ let configLoading = true;
 
 // Default fallback configuration
 const defaultConfig = {
-  API_BASE_URL: 'http://127.0.0.1:8000', // Only used if runtime config fails to load
+  API_BASE_URL:
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : 'http://127.0.0.1:8000', // Only used if runtime config fails to load
 };
+
+function isLocalAPIBaseURL(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost';
+  } catch {
+    return false;
+  }
+}
+
+function isLocalPage(): boolean {
+  if (typeof window === 'undefined') return true;
+  return window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+}
 
 // Function to load runtime configuration
 export async function loadRuntimeConfig(): Promise<void> {
@@ -60,6 +77,11 @@ export function getConfig() {
 
   // Then try Vite environment variables (for local development)
   if (import.meta.env.VITE_API_BASE_URL) {
+    if (!isLocalPage() && isLocalAPIBaseURL(import.meta.env.VITE_API_BASE_URL)) {
+      console.warn('Ignoring local VITE_API_BASE_URL on a deployed site');
+      return defaultConfig;
+    }
+
     const viteConfig = {
       API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
     };
