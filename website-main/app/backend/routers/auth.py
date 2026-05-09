@@ -103,9 +103,6 @@ def build_frontend_route_url(request: Request, path: str, query: str) -> str:
     clean_path = path.lstrip("/")
     separator = "&" if "?" in clean_path else "?"
 
-    if "github.io" in frontend_url:
-        return f"{frontend_url}/#/{clean_path}{separator}{query}"
-
     return f"{frontend_url}/{clean_path}{separator}{query}"
 
 
