@@ -16,6 +16,10 @@ services:
         value: "116749725958578279287"
       - key: ADMIN_USER_EMAIL
         value: mhmdaaa610@gmail.com
+      - key: ADMIN_LOGIN_USERNAME
+        value: admin
+      - key: ADMIN_LOGIN_PASSWORD
+        sync: false
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT

@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60
     admin_user_id: str = ""
     admin_user_email: str = ""
+    admin_login_username: str = ""
+    admin_login_password: str = ""
     allow_local_admin_login: str = "false"
     oidc_issuer_url: str = "https://accounts.google.com"
     oidc_authorization_url: Optional[str] = None

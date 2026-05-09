@@ -21,6 +21,13 @@ class PlatformTokenExchangeRequest(BaseModel):
     platform_token: str
 
 
+class AdminPasswordLoginRequest(BaseModel):
+    """Request body for direct admin username/password login."""
+
+    username: str
+    password: str
+
+
 class TokenExchangeResponse(BaseModel):
     """Response body for issued application token."""
 

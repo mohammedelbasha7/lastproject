@@ -45,6 +45,10 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({
               <Mail className="h-4 w-4 mr-2" />
               Sign in with Gmail
             </Button>
+            <Button onClick={() => navigate('/admin-login')} className="w-full" variant="outline">
+              <User className="h-4 w-4 mr-2" />
+              Sign in with username
+            </Button>
             <Button onClick={() => navigate('/')} className="w-full" variant="outline">
               <Home className="h-4 w-4 mr-2" />
               Back to store

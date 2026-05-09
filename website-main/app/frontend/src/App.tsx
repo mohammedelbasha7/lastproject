@@ -7,6 +7,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import Index from './pages/Index';
 import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
+import AdminPasswordLogin from './pages/AdminPasswordLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import CartPage from './pages/Cart';
@@ -26,6 +27,7 @@ const AppRoutes = () => (
     <Route path="/payment-success" element={<PaymentSuccessPage />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
+    <Route path="/admin-login" element={<AdminPasswordLogin />} />
     <Route
       path="/admin/*"
       element={

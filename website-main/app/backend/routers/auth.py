@@ -1,5 +1,6 @@
 import logging
 import os
+import hmac
 from typing import Optional
 from urllib.parse import urlencode
 
@@ -21,6 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from models.auth import User
 from schemas.auth import (
+    AdminPasswordLoginRequest,
     PlatformTokenExchangeRequest,
     TokenExchangeResponse,
     UserResponse,
@@ -168,6 +170,41 @@ async def dev_admin_login(request: Request, db: AsyncSession = Depends(get_db)):
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Local admin login is disabled",
     )
+
+
+@router.post("/admin-password-login", response_model=TokenExchangeResponse)
+async def admin_password_login(payload: AdminPasswordLoginRequest, db: AsyncSession = Depends(get_db)):
+    """Issue an admin token using configured admin username/password."""
+    configured_username = str(getattr(settings, "admin_login_username", "")).strip()
+    configured_password = str(getattr(settings, "admin_login_password", ""))
+    admin_user_id = str(getattr(settings, "admin_user_id", "")).strip()
+    admin_user_email = str(getattr(settings, "admin_user_email", "")).strip()
+
+    if not configured_username or not configured_password:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Admin password login requires ADMIN_LOGIN_USERNAME and ADMIN_LOGIN_PASSWORD",
+        )
+
+    if not admin_user_id or not admin_user_email:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Admin password login requires ADMIN_USER_ID and ADMIN_USER_EMAIL",
+        )
+
+    username_matches = hmac.compare_digest(payload.username.strip(), configured_username)
+    password_matches = hmac.compare_digest(payload.password, configured_password)
+    if not username_matches or not password_matches:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin username or password",
+        )
+
+    auth_service = AuthService(db)
+    user = User(id=admin_user_id, email=admin_user_email, name=derive_name_from_email(admin_user_email), role="admin")
+    app_token, _expires_at, _ = await auth_service.issue_app_token(user=user)
+
+    return TokenExchangeResponse(token=app_token)
 
 
 @router.get("/callback")

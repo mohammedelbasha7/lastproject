@@ -50,6 +50,15 @@ class RPApi {
     window.location.href = `${this.getBaseURL()}/api/v1/auth/login`;
   }
 
+  async passwordLogin(username: string, password: string) {
+    const response = await this.client.post(
+      `${this.getBaseURL()}/api/v1/auth/admin-password-login`,
+      { username, password }
+    );
+    localStorage.setItem(TOKEN_STORAGE_KEY, response.data.token);
+    return response.data;
+  }
+
   async logout() {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     localStorage.removeItem(AUTH_RETURN_TO_KEY);
