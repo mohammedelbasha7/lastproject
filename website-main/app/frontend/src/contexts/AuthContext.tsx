@@ -5,7 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import { authApi } from '../lib/auth';
+import { authApi, authTokenStorage } from '../lib/auth';
 
 interface User {
   id: string;
@@ -48,9 +48,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+      const hasToken = Boolean(authTokenStorage.get());
+      const fallbackMs = hasToken ? 15000 : 5000;
       const userData = await Promise.race([
         authApi.getCurrentUser(),
-        new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), fallbackMs)),
       ]);
       setUser(userData);
     } catch (err) {
