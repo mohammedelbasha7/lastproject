@@ -17,12 +17,14 @@ import {
   Users,
   Mail,
   MailOpen,
+  Handshake,
 } from 'lucide-react';
 import ProductsManager from './admin/ProductsManager';
 import InventoryEditor from './admin/InventoryEditor';
 import CategoriesManager from './admin/CategoriesManager';
 import ContactInbox from './admin/ContactInbox';
 import TestimonialsManager from './admin/TestimonialsManager';
+import CrmManager from './admin/CrmManager';
 
 interface Stats {
   totalProducts: number;
@@ -84,6 +86,7 @@ const navItems = [
   { to: '/admin/products', label: 'מוצרים', icon: <Package className="w-5 h-5" />, end: false },
   { to: '/admin/inventory', label: 'Inventory', icon: <Boxes className="w-5 h-5" />, end: false },
   { to: '/admin/categories', label: 'קטגוריות', icon: <FolderOpen className="w-5 h-5" />, end: false },
+  { to: '/admin/crm', label: 'CRM', icon: <Handshake className="w-5 h-5" />, end: false },
   { to: '/admin/inbox', label: 'הודעות', icon: <MessageSquare className="w-5 h-5" />, end: false },
   { to: '/admin/testimonials', label: 'חוות דעת', icon: <Star className="w-5 h-5" />, end: false },
 ];
@@ -191,6 +194,7 @@ export default function AdminDashboard() {
             <Route path="products" element={<ProductsManager />} />
             <Route path="inventory" element={<InventoryEditor />} />
             <Route path="categories" element={<CategoriesManager />} />
+            <Route path="crm" element={<CrmManager />} />
             <Route path="inbox" element={<ContactInbox />} />
             <Route path="testimonials" element={<TestimonialsManager />} />
           </Routes>
