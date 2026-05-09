@@ -12,6 +12,10 @@ services:
         value: 3.12.8
       - key: FRONTEND_URL
         value: https://mohammedelbasha7.github.io/lastproject
+      - key: ADMIN_USER_ID
+        sync: false
+      - key: ADMIN_USER_EMAIL
+        sync: false
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
