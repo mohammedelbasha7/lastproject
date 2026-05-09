@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, Shield, User, Mail } from 'lucide-react';
+import { Home, Shield, User } from 'lucide-react';
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface ProtectedAdminRouteProps {
 const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({
   children,
 }) => {
-  const { user, loading, isAdmin, login } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   // Loading state
@@ -41,11 +41,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button onClick={() => login('/admin')} className="w-full bg-gold hover:bg-gold/90 text-white">
-              <Mail className="h-4 w-4 mr-2" />
-              Sign in with Gmail
-            </Button>
-            <Button onClick={() => navigate('/admin-login')} className="w-full" variant="outline">
+            <Button onClick={() => navigate('/admin-login')} className="w-full bg-gold hover:bg-gold/90 text-white">
               <User className="h-4 w-4 mr-2" />
               Sign in with username
             </Button>
@@ -94,9 +90,9 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({
             </div>
 
             <div className="space-y-3">
-              <Button onClick={() => login('/admin')} className="w-full" variant="outline">
-                <Mail className="h-4 w-4 mr-2" />
-                Switch Gmail account
+              <Button onClick={() => navigate('/admin-login')} className="w-full" variant="outline">
+                <User className="h-4 w-4 mr-2" />
+                Sign in with username
               </Button>
 
               <Button
