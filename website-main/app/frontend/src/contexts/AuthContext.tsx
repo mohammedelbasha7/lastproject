@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       const userData = await Promise.race([
         authApi.getCurrentUser(),
-        new Promise<null>((resolve) => setTimeout(() => resolve(null), 12000)),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
       ]);
       setUser(userData);
     } catch (err) {

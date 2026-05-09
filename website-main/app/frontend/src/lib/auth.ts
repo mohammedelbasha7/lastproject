@@ -10,6 +10,7 @@ class RPApi {
   constructor() {
     this.client = axios.create({
       withCredentials: true,
+      timeout: 4000,
       headers: {
         'Content-Type': 'application/json',
       },
