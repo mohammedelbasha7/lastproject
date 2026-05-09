@@ -235,7 +235,9 @@ async def callback(
     auth_service = AuthService(db)
     temp_data = await auth_service.get_and_delete_oidc_state(state)
     if not temp_data:
-        return redirect_with_error("Invalid or expired state parameter")
+        return redirect_with_error(
+            "Your sign-in session expired. Please try signing in again."
+        )
 
     nonce = temp_data["nonce"]
     code_verifier = temp_data.get("code_verifier")

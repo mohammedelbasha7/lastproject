@@ -86,7 +86,9 @@ class AuthService:
         # Clean up expired states first
         await self.db.execute(delete(OIDCState).where(OIDCState.expires_at < datetime.now(timezone.utc)))
 
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)  # 10 minute expiry
+        # Give users more time to complete Google OAuth flows (account chooser/MFA),
+        # especially on mobile or slow networks.
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=30)
 
         oidc_state = OIDCState(state=state, nonce=nonce, code_verifier=code_verifier, expires_at=expires_at)
 
