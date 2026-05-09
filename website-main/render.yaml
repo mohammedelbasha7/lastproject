@@ -19,7 +19,7 @@ services:
       - key: ADMIN_LOGIN_USERNAME
         value: admin
       - key: ADMIN_LOGIN_PASSWORD
-        sync: false
+        value: admin123
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
