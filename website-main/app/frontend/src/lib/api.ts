@@ -8,12 +8,37 @@ function getAPIBase() {
   return `${getAPIBaseURL()}/api/v1`;
 }
 
+function entityQuery(params: Record<string, string | number | boolean | undefined>) {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      searchParams.set(key, String(value));
+    }
+  });
+  const query = searchParams.toString();
+  return query ? `?${query}` : '';
+}
+
+async function publicJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${getAPIBase()}${path}`);
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`API request failed with ${response.status}${detail ? `: ${detail}` : ''}`);
+  }
+  return response.json();
+}
+
 function getAuthHeaders() {
   const token = authTokenStorage.get();
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+}
+
+function getAuthOnlyHeaders() {
+  const token = authTokenStorage.get();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 async function adminJson<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -26,7 +51,8 @@ async function adminJson<T>(path: string, options: RequestInit = {}): Promise<T>
   });
 
   if (!response.ok) {
-    throw new Error(`Admin API request failed with ${response.status}`);
+    const detail = await response.text().catch(() => '');
+    throw new Error(`Admin API request failed with ${response.status}${detail ? `: ${detail}` : ''}`);
   }
 
   return response.json();
@@ -82,7 +108,7 @@ const FALLBACK_CATEGORIES: Category[] = [
 ];
 
 const FALLBACK_PRODUCTS: Product[] = [
-  { id: 1, name: 'מיטת אלגנט זוגית', slug: 'elegant-double', description: 'מיטה זוגית עם ראש מיטה מרופד, עיצוב אירופאי, כוללת ארגז מצעים', price: 4990, image_url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&q=80', category_id: 1, featured: true, created_at: '2026-04-18T00:00:00Z' },
+  { id: 1, name: 'מיטת אלגנט זוגית', slug: 'elegant-double', description: 'מיטה זוגית עם ראש מיטה מרופד, עיצוב אירופאי, כוללת ארגז מצעים', price: 3100, image_url: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&q=80', category_id: 1, featured: true, created_at: '2026-04-18T00:00:00Z' },
   { id: 2, name: 'מיטת רויאל זוגית', slug: 'royal-double', description: 'מיטה זוגית יוקרתית עם ראש מיטה גבוה, ריפוד קטיפה', price: 6490, image_url: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80', category_id: 1, featured: true, created_at: '2026-04-17T00:00:00Z' },
   { id: 3, name: 'מיטת ילדים קלאסית', slug: 'kids-classic', description: 'מיטת ילדים נוחה ובטוחה, עם מגירות לאחסון', price: 2890, image_url: 'https://images.unsplash.com/photo-1558882224-dda166733046?w=800&q=80', category_id: 3, featured: true, created_at: '2026-04-16T00:00:00Z' },
   { id: 4, name: 'מזרן אורטופדי פרימיום', slug: 'ortho-premium', description: 'מזרן אורטופדי עם קפיצים מבודדים, תמיכה מלאה לעמוד השדרה', price: 3490, image_url: 'https://images.unsplash.com/photo-1631049552057-403cdb8f0658?w=800&q=80', category_id: 4, featured: true, created_at: '2026-04-15T00:00:00Z' },
@@ -100,12 +126,10 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const response = await client.entities.categories.query({
-      query: {},
-      sort: 'display_order',
-      limit: 20,
-    });
-    const items = (response.data?.items || []) as Category[];
+    const response = await publicJson<{ items: Category[] }>(
+      `/entities/categories${entityQuery({ sort: 'display_order', limit: 20 })}`,
+    );
+    const items = response.items || [];
     if (items.length === 0) return FALLBACK_CATEGORIES;
     // Deduplicate by slug – keep the first occurrence
     const seen = new Set<string>();
@@ -122,14 +146,14 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getProducts(categoryId?: number): Promise<Product[]> {
   try {
-    const query: Record<string, unknown> = {};
-    if (categoryId) query.category_id = categoryId;
-    const response = await client.entities.products.query({
-      query,
-      sort: '-created_at',
-      limit: 50,
-    });
-    const items = (response.data?.items || []) as Product[];
+    const response = await publicJson<{ items: Product[] }>(
+      `/entities/products${entityQuery({
+        query: categoryId ? JSON.stringify({ category_id: categoryId }) : undefined,
+        sort: '-created_at',
+        limit: 50,
+      })}`,
+    );
+    const items = response.items || [];
     if (items.length > 0) return items;
     return categoryId ? FALLBACK_PRODUCTS.filter((p) => p.category_id === categoryId) : FALLBACK_PRODUCTS;
   } catch {
@@ -139,11 +163,14 @@ export async function getProducts(categoryId?: number): Promise<Product[]> {
 
 export async function getFeaturedProducts(): Promise<Product[]> {
   try {
-    const response = await client.entities.products.query({
-      query: { featured: true },
-      limit: 20,
-    });
-    const items = (response.data?.items || []) as Product[];
+    const response = await publicJson<{ items: Product[] }>(
+      `/entities/products${entityQuery({
+        query: JSON.stringify({ featured: true }),
+        sort: '-created_at',
+        limit: 20,
+      })}`,
+    );
+    const items = response.items || [];
     return items.length > 0 ? items : FALLBACK_PRODUCTS;
   } catch {
     return FALLBACK_PRODUCTS;
@@ -152,12 +179,10 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
 export async function getTestimonials(): Promise<Testimonial[]> {
   try {
-    const response = await client.entities.testimonials.query({
-      query: {},
-      sort: '-created_at',
-      limit: 20,
-    });
-    const items = (response.data?.items || []) as Testimonial[];
+    const response = await publicJson<{ items: Testimonial[] }>(
+      `/entities/testimonials${entityQuery({ sort: '-created_at', limit: 20 })}`,
+    );
+    const items = response.items || [];
     return items.length > 0 ? items : FALLBACK_TESTIMONIALS;
   } catch {
     return FALLBACK_TESTIMONIALS;
@@ -166,31 +191,79 @@ export async function getTestimonials(): Promise<Testimonial[]> {
 
 export async function submitContact(data: ContactSubmission): Promise<boolean> {
   try {
-    await client.entities.contact_submissions.create({
-      data: {
+    const response = await fetch(`${getAPIBase()}/entities/contact_submissions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         name: data.name,
         mobile: data.mobile,
         email: data.email,
         message: data.message || '',
         read: false,
-      },
+      }),
     });
+
+    if (!response.ok) {
+      console.error('Contact submission failed:', response.status, await response.text());
+      return false;
+    }
+
     return true;
-  } catch {
-    return true;
+  } catch (error) {
+    console.error('Contact submission error:', error);
+    return false;
   }
 }
 
 // ─── Admin API ────────────────────────────────────────────────
 
 // Products
+export async function getAdminProducts(): Promise<Product[]> {
+  try {
+    const response = await adminJson<{ items: Product[] }>(
+      '/entities/products?sort=-created_at&limit=200',
+    );
+    return response.items || [];
+  } catch (error) {
+    console.error('Failed to load admin products:', error);
+    return [];
+  }
+}
+
+export async function uploadAdminImage(file: File): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${getAPIBase()}/storage/local-image`, {
+      method: 'POST',
+      headers: getAuthOnlyHeaders(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      console.error('Image upload failed:', response.status, await response.text());
+      return null;
+    }
+
+    const data = await response.json();
+    return data.url || null;
+  } catch (error) {
+    console.error('Image upload error:', error);
+    return null;
+  }
+}
+
 export async function createProduct(data: Omit<Product, 'id'>): Promise<Product | null> {
   try {
     return await adminJson<Product>('/entities/products', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to create product:', error);
     return null;
   }
 }
@@ -201,7 +274,8 @@ export async function updateProduct(id: number, data: Partial<Product>): Promise
       method: 'PUT',
       body: JSON.stringify(data),
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to update product:', error);
     return null;
   }
 }
@@ -212,19 +286,33 @@ export async function deleteProduct(id: number): Promise<boolean> {
       method: 'DELETE',
     });
     return true;
-  } catch {
+  } catch (error) {
+    console.error('Failed to delete product:', error);
     return false;
   }
 }
 
 // Categories
+export async function getAdminCategories(): Promise<Category[]> {
+  try {
+    const response = await adminJson<{ items: Category[] }>(
+      '/entities/categories?sort=display_order&limit=200',
+    );
+    return response.items || [];
+  } catch (error) {
+    console.error('Failed to load admin categories:', error);
+    return [];
+  }
+}
+
 export async function createCategory(data: Omit<Category, 'id'>): Promise<Category | null> {
   try {
     return await adminJson<Category>('/entities/categories', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to create category:', error);
     return null;
   }
 }
@@ -235,7 +323,8 @@ export async function updateCategory(id: number, data: Partial<Category>): Promi
       method: 'PUT',
       body: JSON.stringify(data),
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to update category:', error);
     return null;
   }
 }
@@ -246,19 +335,33 @@ export async function deleteCategory(id: number): Promise<boolean> {
       method: 'DELETE',
     });
     return true;
-  } catch {
+  } catch (error) {
+    console.error('Failed to delete category:', error);
     return false;
   }
 }
 
 // Testimonials
+export async function getAdminTestimonials(): Promise<Testimonial[]> {
+  try {
+    const response = await adminJson<{ items: Testimonial[] }>(
+      '/entities/testimonials?sort=-created_at&limit=200',
+    );
+    return response.items || [];
+  } catch (error) {
+    console.error('Failed to load admin testimonials:', error);
+    return [];
+  }
+}
+
 export async function createTestimonial(data: Omit<Testimonial, 'id'>): Promise<Testimonial | null> {
   try {
     return await adminJson<Testimonial>('/entities/testimonials', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to create testimonial:', error);
     return null;
   }
 }
@@ -269,7 +372,8 @@ export async function updateTestimonial(id: number, data: Partial<Testimonial>):
       method: 'PUT',
       body: JSON.stringify(data),
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to update testimonial:', error);
     return null;
   }
 }
@@ -280,7 +384,8 @@ export async function deleteTestimonial(id: number): Promise<boolean> {
       method: 'DELETE',
     });
     return true;
-  } catch {
+  } catch (error) {
+    console.error('Failed to delete testimonial:', error);
     return false;
   }
 }
@@ -323,9 +428,9 @@ export async function deleteContactSubmission(id: number): Promise<boolean> {
 // Stats
 export async function getAdminStats() {
   const [products, categories, testimonials, contacts] = await Promise.all([
-    getProducts(),
-    getCategories(),
-    getTestimonials(),
+    getAdminProducts(),
+    getAdminCategories(),
+    getAdminTestimonials(),
     getContactSubmissions(),
   ]);
   const unreadContacts = contacts.filter((c) => !c.read).length;

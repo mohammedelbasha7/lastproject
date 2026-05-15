@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  getCategories,
+  getAdminCategories,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -8,6 +8,7 @@ import {
 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import ImageUploadButton from '@/components/admin/ImageUploadButton';
 import { Plus, Pencil, Trash2, X, Save, Image } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,7 +31,7 @@ export default function CategoriesManager() {
 
   const loadData = async () => {
     setLoading(true);
-    const cats = await getCategories();
+    const cats = await getAdminCategories();
     setCategories(cats);
     setLoading(false);
   };
@@ -118,7 +119,7 @@ export default function CategoriesManager() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-5 border-b">
               <h2 className="text-lg font-bold">{editingId ? 'עריכת קטגוריה' : 'קטגוריה חדשה'}</h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -133,7 +134,15 @@ export default function CategoriesManager() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">קישור לתמונה</label>
-                <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." dir="ltr" />
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    value={form.image_url}
+                    onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                    placeholder="https://..."
+                    dir="ltr"
+                  />
+                  <ImageUploadButton onUploaded={(url) => setForm({ ...form, image_url: url })} />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">סדר תצוגה</label>
@@ -163,11 +172,11 @@ export default function CategoriesManager() {
                   <Image className="w-10 h-10 text-gray-300" />
                 </div>
               )}
-              <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => openEdit(c)} className="p-1.5 bg-white rounded-lg shadow-sm text-blue-600 hover:bg-blue-50">
+              <div className="absolute top-2 left-2 flex gap-1">
+                <button type="button" onClick={() => openEdit(c)} className="p-1.5 bg-white rounded-lg shadow-sm text-blue-600 hover:bg-blue-50" aria-label="Edit category">
                   <Pencil className="w-4 h-4" />
                 </button>
-                <button onClick={() => handleDelete(c.id)} className="p-1.5 bg-white rounded-lg shadow-sm text-red-500 hover:bg-red-50">
+                <button type="button" onClick={() => handleDelete(c.id)} className="p-1.5 bg-white rounded-lg shadow-sm text-red-500 hover:bg-red-50" aria-label="Delete category">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>

@@ -6,6 +6,7 @@ import { AlertCircle } from 'lucide-react';
 export default function AuthErrorPage() {
   const [searchParams] = useSearchParams();
   const [countdown, setCountdown] = useState(3);
+  const homeUrl = import.meta.env.BASE_URL || '/';
   const errorMessage =
     searchParams.get('msg') ||
     'Sorry, your authentication information is invalid or has expired';
@@ -17,7 +18,7 @@ export default function AuthErrorPage() {
         if (prev <= 1) {
           clearInterval(timer);
           // Redirect to home page
-          window.location.href = '/';
+          window.location.href = homeUrl;
           return 0;
         }
         return prev - 1;
@@ -26,10 +27,10 @@ export default function AuthErrorPage() {
 
     // Clean up timer
     return () => clearInterval(timer);
-  }, []);
+  }, [homeUrl]);
 
   const handleReturnHome = () => {
-    window.location.href = '/';
+    window.location.href = homeUrl;
   };
 
   return (

@@ -7,7 +7,7 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
-        value: sqlite:///./local_dev.db
+        sync: false
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: FRONTEND_URL
@@ -17,9 +17,9 @@ services:
       - key: ADMIN_USER_EMAIL
         value: mhmdaaa610@gmail.com
       - key: ADMIN_LOGIN_USERNAME
-        value: admin
+        value: mhmdaaa610@gmail.com
       - key: ADMIN_LOGIN_PASSWORD
-        value: admin123
+        sync: false
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT

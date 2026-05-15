@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
-  getProducts,
-  getCategories,
+  getAdminProducts,
+  getAdminCategories,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import ImageUploadButton from '@/components/admin/ImageUploadButton';
 import { Plus, Pencil, Trash2, X, Save, Image } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -44,7 +45,7 @@ export default function ProductsManager() {
 
   const loadData = async () => {
     setLoading(true);
-    const [prods, cats] = await Promise.all([getProducts(), getCategories()]);
+    const [prods, cats] = await Promise.all([getAdminProducts(), getAdminCategories()]);
     setProducts(prods);
     setCategories(cats);
     setLoading(false);
@@ -150,7 +151,7 @@ export default function ProductsManager() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b">
               <h2 className="text-lg font-bold">{editingId ? 'עריכת מוצר' : 'מוצר חדש'}</h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -193,7 +194,15 @@ export default function ProductsManager() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">קישור לתמונה</label>
-                <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." dir="ltr" />
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    value={form.image_url}
+                    onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                    placeholder="https://..."
+                    dir="ltr"
+                  />
+                  <ImageUploadButton onUploaded={(url) => setForm({ ...form, image_url: url })} />
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -255,10 +264,10 @@ export default function ProductsManager() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <button onClick={() => openEdit(p)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                      <button type="button" onClick={() => openEdit(p)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" aria-label="Edit product">
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(p.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                      <button type="button" onClick={() => handleDelete(p.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" aria-label="Delete product">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

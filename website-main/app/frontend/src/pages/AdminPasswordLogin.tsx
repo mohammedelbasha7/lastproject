@@ -1,5 +1,4 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Lock, User, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { authApi } from '@/lib/auth';
 
 export default function AdminPasswordLogin() {
-  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +19,7 @@ export default function AdminPasswordLogin() {
 
     try {
       await authApi.passwordLogin(username, password);
-      navigate('/admin', { replace: true });
+      window.location.replace(`${import.meta.env.BASE_URL}admin`);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Invalid username or password');
     } finally {

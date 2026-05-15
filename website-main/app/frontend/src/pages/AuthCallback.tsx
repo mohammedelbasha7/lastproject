@@ -7,7 +7,8 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const token = searchParams.get('token') || hashParams.get('token');
     if (!token) {
       navigate('/auth/error?msg=Missing authentication token', { replace: true });
       return;

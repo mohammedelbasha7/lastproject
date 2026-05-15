@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  getTestimonials,
+  getAdminTestimonials,
   createTestimonial,
   updateTestimonial,
   deleteTestimonial,
@@ -29,7 +29,7 @@ export default function TestimonialsManager() {
 
   const loadData = async () => {
     setLoading(true);
-    const data = await getTestimonials();
+    const data = await getAdminTestimonials();
     setTestimonials(data);
     setLoading(false);
   };
@@ -116,7 +116,7 @@ export default function TestimonialsManager() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-5 border-b">
               <h2 className="text-lg font-bold">{editingId ? 'עריכת חוות דעת' : 'חוות דעת חדשה'}</h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+              <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -169,11 +169,11 @@ export default function TestimonialsManager() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {testimonials.map((t) => (
           <div key={t.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 group relative">
-            <div className="absolute top-3 left-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => openEdit(t)} className="p-1.5 bg-gray-50 rounded-lg text-blue-600 hover:bg-blue-50">
+            <div className="absolute top-3 left-3 flex gap-1">
+              <button type="button" onClick={() => openEdit(t)} className="p-1.5 bg-gray-50 rounded-lg text-blue-600 hover:bg-blue-50" aria-label="Edit testimonial">
                 <Pencil className="w-4 h-4" />
               </button>
-              <button onClick={() => handleDelete(t.id)} className="p-1.5 bg-gray-50 rounded-lg text-red-500 hover:bg-red-50">
+              <button type="button" onClick={() => handleDelete(t.id)} className="p-1.5 bg-gray-50 rounded-lg text-red-500 hover:bg-red-50" aria-label="Delete testimonial">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>

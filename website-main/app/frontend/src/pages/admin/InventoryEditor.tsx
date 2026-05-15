@@ -3,7 +3,8 @@ import { Image, RefreshCw, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getProducts, updateProduct, type Product } from '@/lib/api';
+import ImageUploadButton from '@/components/admin/ImageUploadButton';
+import { getAdminProducts, updateProduct, type Product } from '@/lib/api';
 
 type Draft = {
   price: string;
@@ -27,7 +28,7 @@ export default function InventoryEditor() {
 
   const loadProducts = async () => {
     setLoading(true);
-    const items = await getProducts();
+    const items = await getAdminProducts();
     setProducts(items);
     setDrafts(Object.fromEntries(items.map((product) => [product.id, toDraft(product)])));
     setLoading(false);
@@ -191,12 +192,18 @@ export default function InventoryEditor() {
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <Input
-                        value={draft.image_url}
-                        onChange={(event) => updateDraft(product.id, { image_url: event.target.value })}
-                        placeholder="https://..."
-                        dir="ltr"
-                      />
+                      <div className="flex min-w-[360px] gap-2">
+                        <Input
+                          value={draft.image_url}
+                          onChange={(event) => updateDraft(product.id, { image_url: event.target.value })}
+                          placeholder="https://..."
+                          dir="ltr"
+                        />
+                        <ImageUploadButton
+                          size="sm"
+                          onUploaded={(url) => updateDraft(product.id, { image_url: url })}
+                        />
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <Button
