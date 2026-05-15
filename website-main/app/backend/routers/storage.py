@@ -1,7 +1,12 @@
 import logging
+import os
+import re
+import uuid
+from pathlib import Path
 
-from dependencies.auth import get_admin_user, get_current_user
-from fastapi import APIRouter, Depends, HTTPException, status
+from dependencies.auth import get_admin_user
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi.responses import FileResponse
 from schemas.auth import UserResponse
 from schemas.storage import (
     BucketListResponse,
@@ -23,6 +28,66 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/storage", tags=["storage"])
 
+LOCAL_UPLOAD_DIR = Path(__file__).resolve().parents[1] / "uploads"
+ALLOWED_LOCAL_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+ALLOWED_LOCAL_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+
+
+def _safe_local_image_name(filename: str) -> str:
+    suffix = Path(filename or "").suffix.lower()
+    if suffix not in ALLOWED_LOCAL_IMAGE_EXTENSIONS:
+        raise ValueError("Only JPG, PNG, WebP, and GIF images are allowed")
+
+    stem = Path(filename).stem or "image"
+    safe_stem = re.sub(r"[^A-Za-z0-9._-]+", "-", stem).strip(".-") or "image"
+    return f"{safe_stem}-{uuid.uuid4().hex[:12]}{suffix}"
+
+
+def _local_file_url(request: Request, filename: str) -> str:
+    return str(request.url_for("get_local_image", filename=filename))
+
+
+@router.post("/local-image")
+async def upload_local_image(
+    request: Request,
+    file: UploadFile = File(...),
+    _current_user: UserResponse = Depends(get_admin_user),
+):
+    if file.content_type not in ALLOWED_LOCAL_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only JPG, PNG, WebP, and GIF images are allowed",
+        )
+
+    try:
+        filename = _safe_local_image_name(file.filename or "image")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    LOCAL_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    target_path = LOCAL_UPLOAD_DIR / filename
+
+    try:
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded image is empty")
+        if len(contents) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image must be 10MB or smaller")
+        target_path.write_bytes(contents)
+    finally:
+        await file.close()
+
+    return {"url": _local_file_url(request, filename), "filename": filename}
+
+
+@router.get("/local-image/{filename}", name="get_local_image")
+async def get_local_image(filename: str):
+    safe_filename = os.path.basename(filename)
+    path = LOCAL_UPLOAD_DIR / safe_filename
+    if not path.exists() or not path.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+    return FileResponse(path)
+
 
 @router.post("/create-bucket", response_model=BucketResponse)
 async def create_bucket(request: BucketRequest, _current_user: UserResponse = Depends(get_admin_user)):
@@ -41,7 +106,7 @@ async def create_bucket(request: BucketRequest, _current_user: UserResponse = De
 
 
 @router.get("/list-buckets", response_model=BucketListResponse)
-async def list_buckets(_current_user: UserResponse = Depends(get_current_user)):
+async def list_buckets(_current_user: UserResponse = Depends(get_admin_user)):
     """
     List buckets of the user
     """
@@ -57,7 +122,7 @@ async def list_buckets(_current_user: UserResponse = Depends(get_current_user)):
 
 
 @router.get("/list-objects", response_model=ObjectListResponse)
-async def list_objects(request: OSSBaseModel = Depends(), _current_user: UserResponse = Depends(get_current_user)):
+async def list_objects(request: OSSBaseModel = Depends(), _current_user: UserResponse = Depends(get_admin_user)):
     """
     List objects under the bucket
     """
@@ -73,7 +138,7 @@ async def list_objects(request: OSSBaseModel = Depends(), _current_user: UserRes
 
 
 @router.get("/get-object-info", response_model=ObjectInfo)
-async def get_object_info(request: ObjectRequest = Depends(), _current_user: UserResponse = Depends(get_current_user)):
+async def get_object_info(request: ObjectRequest = Depends(), _current_user: UserResponse = Depends(get_admin_user)):
     """
     Get object metadata from the bucket
     """
@@ -89,7 +154,7 @@ async def get_object_info(request: ObjectRequest = Depends(), _current_user: Use
 
 
 @router.post("/rename-object", response_model=RenameResponse)
-async def rename_object(request: RenameRequest, _current_user: UserResponse = Depends(get_current_user)):
+async def rename_object(request: RenameRequest, _current_user: UserResponse = Depends(get_admin_user)):
     """
     Rename object inside the bucket
     """
@@ -105,7 +170,7 @@ async def rename_object(request: RenameRequest, _current_user: UserResponse = De
 
 
 @router.delete("/delete-object", response_model=DeleteResponse)
-async def delete_object(request: ObjectRequest, _current_user: UserResponse = Depends(get_current_user)):
+async def delete_object(request: ObjectRequest, _current_user: UserResponse = Depends(get_admin_user)):
     """
     Delete object inside the bucket
     """
@@ -121,7 +186,7 @@ async def delete_object(request: ObjectRequest, _current_user: UserResponse = De
 
 
 @router.post("/upload-url", response_model=FileUpDownResponse)
-async def upload_file(request: FileUpDownRequest, _current_user: UserResponse = Depends(get_current_user)):
+async def upload_file(request: FileUpDownRequest, _current_user: UserResponse = Depends(get_admin_user)):
     """
     Get a presigned URL for uploading a file to StorageService.
 
@@ -144,7 +209,7 @@ async def upload_file(request: FileUpDownRequest, _current_user: UserResponse = 
 
 
 @router.post("/download-url", response_model=FileUpDownResponse)
-async def download_file(request: FileUpDownRequest, _current_user: UserResponse = Depends(get_current_user)):
+async def download_file(request: FileUpDownRequest, _current_user: UserResponse = Depends(get_admin_user)):
     """
     Get a presigned URL for downloading a file to StorageService.
     """
