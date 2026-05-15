@@ -1,4 +1,4 @@
-import{r as xt,j as W,b as Zn}from"./ui-vendor-B7Nd_E8Y.js";import{p as qc,A as Xc,e as Yc,f as ba,L as Ii,a as Zc,g as Sa,R as xa,c as us}from"./router-vendor-CodSV8nl.js";var fn={};/**
+import{r as xt,j as W,b as Zn}from"./ui-vendor-CB8CJFk-.js";import{p as qc,A as Xc,e as Yc,f as ba,L as Ii,a as Zc,g as Sa,R as xa,c as us}from"./router-vendor-CTNjiblB.js";var fn={};/**
  * @license React
  * react-dom-server-legacy.browser.production.min.js
  *
